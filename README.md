@@ -14,7 +14,7 @@
 > 目前已支持：**岛屿数量（DFS）**，更多题目持续更新中！
 ## 🌐 在线演示
 
-- [岛屿数量（Number of Islands）](https://deshope717.github.io/leetcode-visualizer/example/200-num-islands/player.html)
+- [岛屿数量（Number of Islands）](https://deshope717.github.io/leetcode-visualizer/200-num-islands/player.html)
 ---
 
 ## 🚀 快速开始
