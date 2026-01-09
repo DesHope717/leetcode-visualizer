@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>240. 搜索二维矩阵 II - 算法可视化</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f9f9f9; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #2c3e50; text-align: center; }
+    .grid { margin: 20px 0; display: inline-block; }
+    .row { display: flex; }
+    .cell {
+      width: 50px; height: 50px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid #ccc;
+      margin: 2px;
+      background: #fff;
+      font-weight: bold;
+    }
+    .current { 
+      background: #ffeaa7 !important; 
+      border: 2px solid #e17055; 
+      box-shadow: 0 0 6px rgba(225, 112, 85, 0.6);
+    }
+    .found { 
+      background: #55efc4 !important; 
+      border: 2px solid #00b894; 
+    }
+    .explanation { 
+      background: #2d3436; color: #fdcb6e; padding: 12px; border-radius: 6px; 
+      margin: 15px 0; font-size: 16px; line-height: 1.5;
+    }
+    .controls { text-align: center; margin: 20px 0; }
+    button { padding: 8px 16px; margin: 0 5px; font-size: 16px; cursor: pointer; }
+    .step-info { text-align: center; color: #636e72; margin-top: 10px; }
+    .target-info {
+      text-align: center;
+      font-size: 18px;
+      color: #6c5ce7;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>240. 搜索二维矩阵 II</h1>
+    <p style="text-align:center; color:#636e72;">从右上角开始，每次排除一行或一列</p>
+
+    <div class="target-info">🎯 目标值: <span id="target-value">?</span></div>
+
+    <div class="controls">
+      <button id="prev">◀ 上一步</button>
+      <button id="play">▶ 播放</button>
+      <button id="next">下一步 ▶</button>
+      <button id="reset">↺ 重置</button>
+    </div>
+    <div class="step-info">步骤: <span id="step-counter">0 / 0</span></div>
+
+    <div class="explanation" id="explanation">加载中...</div>
+
+    <div class="grid" id="grid-container"></div>
+  </div>
+
+  <script>
+    fetch('trace.json')
+      .then(res => res.json())
+      .then(trace => {
+        let currentStep = 0;
+        const totalSteps = trace.length;
+        let playing = false;
+        let playInterval;
+
+        // 显示目标值
+        document.getElementById('target-value').textContent = trace[0].target || '?';
+
+        function render(stepData) {
+          document.getElementById('step-counter').textContent = `${currentStep + 1} / ${totalSteps}`;
+          document.getElementById('explanation').textContent = stepData.explanation;
+
+          const gridContainer = document.getElementById('grid-container');
+          gridContainer.innerHTML = '';
+
+          const matrix = stepData.matrix;
+          const current = stepData.current;
+          const found = stepData.found;
+
+          matrix.forEach((row, i) => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'row';
+            row.forEach((val, j) => {
+              const cell = document.createElement('div');
+              cell.className = 'cell';
+              cell.textContent = val;
+
+              if (current && i === current[0] && j === current[1]) {
+                if (found) {
+                  cell.classList.add('found');
+                } else {
+                  cell.classList.add('current');
+                }
+              }
+
+              rowDiv.appendChild(cell);
+            });
+            gridContainer.appendChild(rowDiv);
+          });
+        }
+
+        function nextStep() {
+          if (currentStep < totalSteps - 1) {
+            currentStep++;
+            render(trace[currentStep]);
+          }
+        }
+
+        function prevStep() {
+          if (currentStep > 0) {
+            currentStep--;
+            render(trace[currentStep]);
+          }
+        }
+
+        function reset() {
+          currentStep = 0;
+          render(trace[0]);
+          stopPlay();
+        }
+
+        function startPlay() {
+          if (playing) return;
+          playing = true;
+          document.getElementById('play').textContent = '⏸ 暂停';
+          playInterval = setInterval(() => {
+            if (currentStep >= totalSteps - 1) {
+              stopPlay();
+            } else {
+              nextStep();
+            }
+          }, 1200);
+        }
+
+        function stopPlay() {
+          playing = false;
+          clearInterval(playInterval);
+          document.getElementById('play').textContent = '▶ 播放';
+        }
+
+        // 绑定按钮
+        document.getElementById('next').onclick = nextStep;
+        document.getElementById('prev').onclick = prevStep;
+        document.getElementById('reset').onclick = reset;
+        document.getElementById('play').onclick = () => {
+          if (playing) stopPlay();
+          else startPlay();
+        };
+
+        // 初始渲染
+        render(trace[0]);
+      })
+      .catch(err => {
+        document.getElementById('explanation').textContent = '❌ 加载 trace.json 失败: ' + err.message;
+      });
+  </script>
+</body>
+</html>

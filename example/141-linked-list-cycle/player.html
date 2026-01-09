@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>141. 环形链表 - 快慢指针可视化</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f9f9f9; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #2c3e50; text-align: center; }
+    .list-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .node {
+      width: 60px;
+      height: 40px;
+      border: 2px solid #636e72;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 10px;
+      position: relative;
+      background: #fff;
+      border-radius: 6px;
+    }
+    .node.slow { background: #74b9ff !important; border-color: #0984e3; }
+    .node.fast { background: #fdcb6e !important; border-color: #e17055; }
+    .node.both { background: #a29bfe !important; border-color: #6c5ce7; }
+    .arrow {
+      width: 30px;
+      text-align: center;
+      color: #636e72;
+      font-weight: bold;
+    }
+    .explanation { 
+      background: #2d3436; color: #fdcb6e; padding: 12px; border-radius: 6px; 
+      margin: 15px 0; font-size: 16px; line-height: 1.5;
+    }
+    .legend {
+      text-align: center;
+      margin: 10px 0;
+      color: #636e72;
+    }
+    .legend span {
+      margin: 0 10px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .legend .slow-legend { background: #74b9ff; }
+    .legend .fast-legend { background: #fdcb6e; }
+    .legend .both-legend { background: #a29bfe; }
+    .controls { text-align: center; margin: 20px 0; }
+    button { padding: 8px 16px; margin: 0 5px; font-size: 16px; cursor: pointer; }
+    .step-info { text-align: center; color: #636e72; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>141. 环形链表（Linked List Cycle）</h1>
+    <p style="text-align:center; color:#636e72;">使用快慢指针（Floyd 判圈算法）检测链表中是否存在环</p>
+
+    <div class="legend">
+      <span class="slow-legend">慢指针 (slow)</span>
+      <span class="fast-legend">快指针 (fast)</span>
+      <span class="both-legend">两指针重合</span>
+    </div>
+
+    <div class="controls">
+      <button id="prev">◀ 上一步</button>
+      <button id="play">▶ 播放</button>
+      <button id="next">下一步 ▶</button>
+      <button id="reset">↺ 重置</button>
+    </div>
+    <div class="step-info">步骤: <span id="step-counter">0 / 0</span></div>
+
+    <div class="explanation" id="explanation">加载中...</div>
+
+    <div class="list-container" id="list-container"></div>
+  </div>
+
+  <script>
+    fetch('trace.json')
+      .then(res => res.json())
+      .then(trace => {
+        let currentStep = 0;
+        const totalSteps = trace.length;
+        let playing = false;
+        let playInterval;
+
+        function render(stepData) {
+          document.getElementById('step-counter').textContent = `${currentStep + 1} / ${totalSteps}`;
+          document.getElementById('explanation').textContent = stepData.explanation;
+
+          const listContainer = document.getElementById('list-container');
+          listContainer.innerHTML = '';
+
+          const vals = stepData.list_vals || [];
+          const slowIdx = stepData.slow_index;
+          const fastIdx = stepData.fast_index;
+
+          // 渲染节点和箭头
+          for (let i = 0; i < vals.length; i++) {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'node';
+            nodeDiv.textContent = vals[i];
+
+            // 设置指针高亮
+            if (i === slowIdx && i === fastIdx) {
+              nodeDiv.classList.add('both');
+            } else if (i === slowIdx) {
+              nodeDiv.classList.add('slow');
+            } else if (i === fastIdx) {
+              nodeDiv.classList.add('fast');
+            }
+
+            listContainer.appendChild(nodeDiv);
+
+            // 添加箭头（除了最后一个）
+            if (i < vals.length - 1) {
+              const arrow = document.createElement('div');
+              arrow.className = 'arrow';
+              arrow.textContent = '→';
+              listContainer.appendChild(arrow);
+            }
+          }
+
+          // 如果有环，添加从尾到环起点的虚线箭头（简化处理：只提示）
+          if (stepData.has_cycle && vals.length > 0) {
+            const note = document.createElement('div');
+            note.style.marginTop = '10px';
+            note.style.color = '#e17055';
+            note.style.fontStyle = 'italic';
+            note.textContent = '（尾节点指向环起点，形成闭环）';
+            listContainer.appendChild(note);
+          }
+        }
+
+        function nextStep() {
+          if (currentStep < totalSteps - 1) {
+            currentStep++;
+            render(trace[currentStep]);
+          }
+        }
+
+        function prevStep() {
+          if (currentStep > 0) {
+            currentStep--;
+            render(trace[currentStep]);
+          }
+        }
+
+        function reset() {
+          currentStep = 0;
+          render(trace[0]);
+          stopPlay();
+        }
+
+        function startPlay() {
+          if (playing) return;
+          playing = true;
+          document.getElementById('play').textContent = '⏸ 暂停';
+          playInterval = setInterval(() => {
+            if (currentStep >= totalSteps - 1) {
+              stopPlay();
+            } else {
+              nextStep();
+            }
+          }, 1500);
+        }
+
+        function stopPlay() {
+          playing = false;
+          clearInterval(playInterval);
+          document.getElementById('play').textContent = '▶ 播放';
+        }
+
+        // 绑定按钮
+        document.getElementById('next').onclick = nextStep;
+        document.getElementById('prev').onclick = prevStep;
+        document.getElementById('reset').onclick = reset;
+        document.getElementById('play').onclick = () => {
+          if (playing) stopPlay();
+          else startPlay();
+        };
+
+        // 初始渲染
+        render(trace[0]);
+      })
+      .catch(err => {
+        document.getElementById('explanation').textContent = '❌ 加载 trace.json 失败: ' + err.message;
+      });
+  </script>
+</body>
+</html>

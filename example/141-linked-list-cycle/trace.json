@@ -1,0 +1,72 @@
+[
+  {
+    "step": "初始状态",
+    "explanation": "开始检测链表是否存在环",
+    "list_vals": [
+      3,
+      2,
+      0,
+      -4
+    ],
+    "has_cycle": true,
+    "slow_index": null,
+    "fast_index": null,
+    "result": null
+  },
+  {
+    "step": "第 1 步",
+    "explanation": "慢指针在节点0（值=3），快指针在节点1（值=2）",
+    "list_vals": [
+      3,
+      2,
+      0,
+      -4
+    ],
+    "has_cycle": true,
+    "slow_index": 0,
+    "fast_index": 1,
+    "result": null
+  },
+  {
+    "step": "第 2 步",
+    "explanation": "慢指针在节点1（值=2），快指针在节点3（值=-4）",
+    "list_vals": [
+      3,
+      2,
+      0,
+      -4
+    ],
+    "has_cycle": true,
+    "slow_index": 1,
+    "fast_index": 3,
+    "result": null
+  },
+  {
+    "step": "第 3 步",
+    "explanation": "慢指针在节点2（值=0），快指针在节点2（值=0）",
+    "list_vals": [
+      3,
+      2,
+      0,
+      -4
+    ],
+    "has_cycle": true,
+    "slow_index": 2,
+    "fast_index": 2,
+    "result": null
+  },
+  {
+    "step": "检测到环！",
+    "explanation": "慢指针与快指针在节点2（值=0）相遇，存在环！",
+    "list_vals": [
+      3,
+      2,
+      0,
+      -4
+    ],
+    "has_cycle": true,
+    "slow_index": 2,
+    "fast_index": 2,
+    "result": true
+  }
+]

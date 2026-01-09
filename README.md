@@ -11,11 +11,11 @@
 - 🔄 看清回溯算法的选择与撤销过程  
 - 💡 掌握双指针、单调栈等技巧的执行细节  
 
-> 目前已支持：**岛屿数量（DFS）**，更多题目持续更新中！
+> 目前已支持：**岛屿数量（DFS）**,**最小路径和**等，更多题目持续更新中！
 ## 🌐 在线演示
 
 - [岛屿数量（Number of Islands）](https://deshope717.github.io/leetcode-visualizer/200-num-islands/player.html)
-- [最小路径和（Min path su,）](https://deshope717.github.io/leetcode-visualizer/064-min-path-sum/player.html)
+- [最小路径和（Min path sum）](https://deshope717.github.io/leetcode-visualizer/064-min-path-sum/player.html)
 ---
 
 ## 🚀 快速开始
@@ -24,5 +24,5 @@
 
 1. 克隆仓库：
    ```bash
-   git clone https://github.com/DesHope717/leetcode-hot100-visualizer.git
-   cd leetcode-hot100-visualizer
+   git clone https://github.com/DesHope717/leetcode-visualizer.git
+   cd leetcode-visualizer
