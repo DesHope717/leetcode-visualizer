@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>33. 搜索旋转排序数组 - 算法可视化</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f9f9f9; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #2d3e50; text-align: center; }
+    .array-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      margin: 2px;
+      background: #fff;
+      font-weight: bold;
+      position: relative;
+    }
+    .index-label {
+      position: absolute;
+      top: -20px;
+      font-size: 12px;
+      color: #636e72;
+    }
+    .left { background: #74b9ff !important; border-color: #0984e3; }
+    .mid { background: #fdcb6e !important; border-color: #e17055; }
+    .right { background: #a29bfe !important; border-color: #6c5ce7; }
+    .found { background: #55efc4 !important; border-color: #00b894; }
+    .explanation { 
+      background: #2d3436; color: #fdcb6e; padding: 12px; border-radius: 6px; 
+      margin: 15px 0; font-size: 16px; line-height: 1.5;
+    }
+    .legend {
+      text-align: center;
+      margin: 10px 0;
+      color: #636e72;
+    }
+    .legend span {
+      margin: 0 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .legend .left-legend { background: #74b9ff; }
+    .legend .mid-legend { background: #fdcb6e; }
+    .legend .right-legend { background: #a29bfe; }
+    .legend .found-legend { background: #55efc4; }
+
+    .controls { text-align: center; margin: 20px 0; }
+    button { 
+      padding: 8px 16px; 
+      margin: 0 5px; 
+      font-size: 16px; 
+      cursor: pointer; 
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .step-info { text-align: center; color: #636e72; margin-top: 10px; }
+    .target-info {
+      text-align: center;
+      font-size: 18px;
+      color: #e17055;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>33. 搜索旋转排序数组</h1>
+    <p style="text-align:center; color:#636e72;">在旋转后的排序数组中高效查找目标值</p>
+
+    <div class="target-info">🎯 目标值: <span id="target-value">?</span></div>
+
+    <div class="legend">
+      <span class="left-legend">left</span>
+      <span class="mid-legend">mid</span>
+      <span class="right-legend">right</span>
+      <span class="found-legend">找到目标</span>
+    </div>
+
+    <div class="controls">
+      <button id="prev">◀ 上一步</button>
+      <button id="play">▶ 播放</button>
+      <button id="next">下一步 ▶</button>
+      <button id="reset">↺ 重置</button>
+    </div>
+    <div class="step-info">步骤: <span id="step-counter">0 / 0</span></div>
+
+    <div class="explanation" id="explanation">加载中...</div>
+
+    <div class="array-container" id="array-container"></div>
+  </div>
+
+  <script>
+    // 等待 DOM 完全加载
+    document.addEventListener('DOMContentLoaded', () => {
+      const targetValueEl = document.getElementById('target-value');
+      const explanationEl = document.getElementById('explanation');
+      const stepCounterEl = document.getElementById('step-counter');
+      const arrayContainer = document.getElementById('array-container');
+      const btnPrev = document.getElementById('prev');
+      const btnNext = document.getElementById('next');
+      const btnPlay = document.getElementById('play');
+      const btnReset = document.getElementById('reset');
+
+      let trace = [];
+      let currentStep = 0;
+      let totalSteps = 0;
+      let playing = false;
+      let playInterval = null;
+
+      // 渲染当前步骤
+      function render(stepData) {
+        // 更新目标值（每一步都同步，更可靠）
+        if (stepData.target !== undefined) {
+          targetValueEl.textContent = stepData.target;
+        }
+
+        stepCounterEl.textContent = `${currentStep + 1} / ${totalSteps}`;
+        explanationEl.textContent = stepData.explanation || '无说明';
+
+        // 清空并重建数组视图
+        arrayContainer.innerHTML = '';
+
+        const nums = stepData.nums || [];
+        const left = stepData.left;
+        const mid = stepData.mid;
+        const right = stepData.right;
+        const found = stepData.found;
+
+        nums.forEach((val, i) => {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.textContent = val;
+
+          const label = document.createElement('div');
+          label.className = 'index-label';
+          label.textContent = i;
+          cell.appendChild(label);
+
+          // 高亮逻辑：found 优先级最高
+          if (found && i === mid) {
+            cell.classList.add('found');
+          } else {
+            if (i === left) cell.classList.add('left');
+            if (i === mid) cell.classList.add('mid');
+            if (i === right) cell.classList.add('right');
+          }
+
+          arrayContainer.appendChild(cell);
+        });
+
+        // 更新按钮状态
+        btnPrev.disabled = currentStep <= 0;
+        btnNext.disabled = currentStep >= totalSteps - 1;
+      }
+
+      // 控制逻辑
+      function nextStep() {
+        if (currentStep < totalSteps - 1) {
+          currentStep++;
+          render(trace[currentStep]);
+        }
+      }
+
+      function prevStep() {
+        if (currentStep > 0) {
+          currentStep--;
+          render(trace[currentStep]);
+        }
+      }
+
+      function reset() {
+        currentStep = 0;
+        render(trace[0]);
+        stopPlay();
+      }
+
+      function startPlay() {
+        if (playing || currentStep >= totalSteps - 1) return;
+        playing = true;
+        btnPlay.textContent = '⏸ 暂停';
+        playInterval = setInterval(() => {
+          if (currentStep >= totalSteps - 1) {
+            stopPlay();
+          } else {
+            nextStep();
+          }
+        }, 1500);
+      }
+
+      function stopPlay() {
+        playing = false;
+        clearInterval(playInterval);
+        btnPlay.textContent = '▶ 播放';
+      }
+
+      // 绑定事件
+      btnNext.addEventListener('click', nextStep);
+      btnPrev.addEventListener('click', prevStep);
+      btnReset.addEventListener('click', reset);
+      btnPlay.addEventListener('click', () => {
+        if (playing) stopPlay();
+        else startPlay();
+      });
+
+      // 加载轨迹数据
+      fetch('trace.json')
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          trace = data;
+          totalSteps = trace.length;
+
+          if (totalSteps === 0) {
+            throw new Error('轨迹为空');
+          }
+
+          // 初始渲染
+          render(trace[0]);
+        })
+        .catch(err => {
+          console.error('加载失败:', err);
+          explanationEl.textContent = `❌ 加载 trace.json 失败: ${err.message}`;
+          targetValueEl.textContent = '?';
+        });
+    });
+  </script>
+</body>
+</html>
