@@ -15,6 +15,7 @@
 ## 🌐 在线演示
 
 - [岛屿数量（Number of Islands）](https://deshope717.github.io/leetcode-visualizer/200-num-islands/player.html)
+- [最小路径和（Min path su,）](https://deshope717.github.io/leetcode-visualizer/064-min-path-sum/player.html)
 ---
 
 ## 🚀 快速开始
